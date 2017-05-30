@@ -123,6 +123,7 @@ class LSTM(object):
         ) + tf.matmul(
             candidate_gate, self.v[3]
         ) + self.biases
+        
 
         ct = (ct_1 * forget_gate) + (candidate_gate * input_gate)
 
