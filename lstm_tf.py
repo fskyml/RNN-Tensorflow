@@ -56,7 +56,7 @@ class LSTM(object):
         def define_placeholders():
             """
             Defines the placeholders for the LSTM network.
-            :return: 
+            :return:
             """
             self.input_placeholder = tf.placeholder(
                 shape=[None, self.vocab_size],
@@ -81,9 +81,9 @@ class LSTM(object):
     def step(self, prev, current):
         """
         Operation to perform while scanning
-        :param prev: 
-        :param current: 
-        :return: 
+        :param prev:
+        :param current:
+        :return:
         """
         ht_1, ct_1 = tf.unstack(prev)
 
@@ -117,13 +117,12 @@ class LSTM(object):
         # Output gate
         output_gate = tf.sigmoid(
             tf.matmul(
-                current, self.w[3]
-            ) + tf.matmul(
-                ht_1, self.u[3]
-            ) + tf.matmul(
-                candidate_gate, self.v[3]
-            ) + self.biases
-        )
+            current, self.w[3])
+        ) + tf.matmul(
+            ht_1, self.u[3]
+        ) + tf.matmul(
+            candidate_gate, self.v[3]
+        ) + self.biases
 
         ct = (ct_1 * forget_gate) + (candidate_gate * input_gate)
 
