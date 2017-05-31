@@ -2,7 +2,7 @@
 In this module we try to use an LSTM(Long Short Term Memory) network for language modelling in
 a similar way that we used the previous vanilla rnn. Hopefully we will see better results.
 """
-
+from lstm_tf import LSTM
 # Prepare data.
 # data path
 PAUL_GRAHAM_DATA = '/home/arko/Documents/Datasets/paulg/paulg.txt'
@@ -27,3 +27,6 @@ CHARACTER_TO_INDEX = {
 INDEX_TO_CHARACTER = {
     i: ch for i, ch in enumerate(CHARACTERS)
 }
+
+lstm_model = LSTM(len(CHARACTERS))
+lstm_model.train(data=DATA, character_to_index=CHARACTER_TO_INDEX)
