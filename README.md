@@ -6,3 +6,4 @@ Bi-directional RNN\
 A RNN(recurrent neural network) is a type of neural network that is good at understanding the time relation between data. We will be using Tensorflow to program these. All the models will be built from scratch without using the prebuilt methods and classes like the BasicLSTMCell to get a better understanding of the inner working of a network.
 All data will be stored in the data directory. We might use different but similar datasets for each individual network.
 
+I would like to thank [Suriyadeepan](https://github.com/suriyadeepan) and his [blog](http://suriyadeepan.github.io/2017-01-07-unfolding-rnn/) that tutored me the use of RNN. A lot of the material might be similar.
