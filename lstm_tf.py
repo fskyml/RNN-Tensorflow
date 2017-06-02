@@ -2,6 +2,7 @@
 We wish to create a model of the LSTM network
 """
 import tensorflow as tf
+import numpy as np
 
 class LSTM(object):
     """
@@ -28,6 +29,9 @@ class LSTM(object):
     ckpt_path = None
     model_name = None
 
+    fixing_tensor = None
+    fixing_bias = None
+
     def __init__(
             self,
             vocab_size: int,
@@ -53,19 +57,19 @@ class LSTM(object):
         Initializes the placeholders
         """
         self.input_placeholder = tf.placeholder(
-            dtype=tf.int32,
-            shape=[None, self.batch_size],
+            dtype=tf.float32,
+            shape=[1, self.batch_size],
             name='Input_Placeholder'
         )
         self.output_placeholder = tf.placeholder(
-            dtype=tf.int32,
-            shape=[None, self.batch_size],
+            dtype=tf.float32,
+            shape=[1, self.batch_size],
             name='Outuput_Placeholder'
         )
 
         self.initial_state_placeholder = tf.placeholder(
-            dtype=tf.int32,
-            shape=[2, None, self.hidden_size],
+            dtype=tf.float32,
+            shape=[2, 1, self.hidden_size],
             name='Initial_state_placeholder'
         )
 
@@ -95,6 +99,7 @@ class LSTM(object):
         # 1: Candidate gate
         # 2: Forget gate
         # 3: Output gate
+        current = tf.reshape(current, shape=[1, self.batch_size])
         # Input gate
         input_gate = tf.sigmoid(
             tf.matmul(
@@ -151,10 +156,30 @@ class LSTM(object):
         """
         Trains the lstm model
         """
+        # A tensor that is used to get the final data into shape.
+        self.fixing_tensor = tf.get_variable(
+            name='v',
+            shape=[(2*self.hidden_size), self.batch_size],
+            dtype=tf.float32,
+            initializer=tf.random_normal_initializer
+        )
+        # And the bias.
+        self.fixing_bias = tf.get_variable(
+            name='FixingBias',
+            shape=[1, self.batch_size],
+            initializer=tf.constant_initializer(0.)
+        )
+
         hidden_states = self.get_states()
+
         # Variables associated with the network.
-        # TODO predict this
-        predictions = None
+        hidden_states_reshaped = tf.reshape(hidden_states, shape=[1, (2 * self.hidden_size)])
+        logits = tf.matmul(
+            hidden_states_reshaped, self.fixing_tensor
+        ) + self.fixing_bias
+
+        predictions = tf.nn.softmax(logits=logits)
+
         total_loss = tf.nn.softmax_cross_entropy_with_logits(
             labels=self.output_placeholder, logits=predictions
         )
@@ -167,7 +192,7 @@ class LSTM(object):
             train_loss = 0
             for epoch in range(number_epox):
                 i = 0
-                while i + self.batch_size < len(data):
+                while i + self.batch_size <= len(data):
                     # Prepare the data.
                     # These are vectors of order [1, batch_size]
                     input_values = [
@@ -176,17 +201,23 @@ class LSTM(object):
                     target_values = [
                         character2idx[ch] for ch in data[i + 1: i + self.batch_size + 1]
                     ]
+                    # A little hack to get the target to the right way.
+                    if i + self.batch_size + 1 >= len(data):
+                        target_values.append(-1)
+                    # another little hack to get the data into right dimension
+                    input_values = np.asarray(input_values).reshape([1, self.batch_size])
+                    target_values = np.asarray(target_values).reshape([1, self.batch_size])
+
                     batch_train_loss, _ = sess.run(
                         [self.loss, self.optimizer],
                         feed_dict={
                             self.input_placeholder: input_values,
                             self.output_placeholder: target_values,
-                            self.initial_state_placeholder: tf.zeros(
+                            self.initial_state_placeholder: np.zeros(
                                 shape=[2, 1, self.hidden_size]
                             )
                         }
                     )
                     i += self.batch_size
-                    train_loss += batch_train_loss
-                print('Epoch: %d\tLoss: %d' % (epoch, train_loss))
+                print('Epoch: %d\tLoss: %f' % (epoch, batch_train_loss))
 

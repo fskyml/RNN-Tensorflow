@@ -9,7 +9,7 @@ PAUL_GRAHAM_DATA = 'data/paulg/paulg.txt'
 REDDIT_COMMENTS_DATA = 'data/RedditComments/reddit-comments-2015-08.txt'
 TESTING_DATA = 'data/small_data_for_testing.txt'
 DATA = open(
-    TESTING_DATA, 'r', encoding='utf8'
+    PAUL_GRAHAM_DATA, 'r', encoding='utf8'
 ).read()
 
 # Extract individuals characters from the string.
@@ -31,4 +31,4 @@ INDEX_TO_CHARACTER = {
 LINES = DATA.split('\n')
 BATCH_SIZE = 256 if len(DATA) > 256 else len(DATA)
 MODEL = LSTM(20, 30, batch_size=BATCH_SIZE)
-MODEL.train(DATA, CHARACTER_TO_INDEX, number_epox=2)
+MODEL.train(DATA, CHARACTER_TO_INDEX, number_epox=10)
