@@ -5,10 +5,11 @@ a similar way that we used the previous vanilla rnn. Hopefully we will see bette
 from lstm_tf import LSTM
 # Prepare data.
 # data path
-PAUL_GRAHAM_DATA = '/home/arko/Documents/Datasets/paulg/paulg.txt'
-REDDIT_COMMENTS_DATA = '/home/arko/Documents/Datasets/RedditComments/reddit-comments-2015-08.txt'
+PAUL_GRAHAM_DATA = 'data/paulg/paulg.txt'
+REDDIT_COMMENTS_DATA = 'data/RedditComments/reddit-comments-2015-08.txt'
+TESTING_DATA = 'data/small_data_for_testing.txt'
 DATA = open(
-    PAUL_GRAHAM_DATA, 'r', encoding='utf8'
+    TESTING_DATA, 'r', encoding='utf8'
 ).read()
 
 # Extract individuals characters from the string.
@@ -27,6 +28,7 @@ CHARACTER_TO_INDEX = {
 INDEX_TO_CHARACTER = {
     i: ch for i, ch in enumerate(CHARACTERS)
 }
-
-lstm_model = LSTM(len(CHARACTERS))
-lstm_model.train(data=DATA, character_to_index=CHARACTER_TO_INDEX)
+LINES = DATA.split('\n')
+BATCH_SIZE = 256 if len(DATA) > 256 else len(DATA)
+MODEL = LSTM(20, 30, batch_size=BATCH_SIZE)
+MODEL.train(DATA, CHARACTER_TO_INDEX, number_epox=2)
