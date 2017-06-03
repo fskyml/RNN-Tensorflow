@@ -10,14 +10,14 @@ learning_rate = 0.001
 
 # Pre-processing!
 # Data
-data = open('/home/arko/Documents/Datasets/paulg/paulg.txt', 'r', encoding='utf8').read()
+data = open('data/paulg/paulg.txt', 'r', encoding='utf8').read()
 characters = sorted(  # Sorts the list for easy indexing. For some reason, the accuracy dips when it is not sorted!
     list(  # Creates a list out of it
         set(data)  # Extracts the unique elements.
     )
 )
 
-test_data = open('/home/arko/Documents/Datasets/paulg/paulg_test.txt', 'r').read()
+test_data = open('data/paulg/paulg_test.txt', 'r').read()
 test_character_index = {
     ch: i for i, ch in enumerate(sorted(list(set(test_data))))
 }
