@@ -21,7 +21,6 @@ class LSTM(object):
     input_weight = None
 
     # Hyperparameters
-    vocab_size = None
     hidden_size = None
     batch_size = 256
 
@@ -34,7 +33,6 @@ class LSTM(object):
 
     def __init__(
             self,
-            vocab_size: int,
             hidden_size: int,
             batch_size: 256,
             ckpt_path='Tensorboard/LSTM/ckpt/LSTM1',
@@ -43,7 +41,6 @@ class LSTM(object):
         """
         Initializes an instance of the LSTM network
         """
-        self.vocab_size = vocab_size
         self.hidden_size = hidden_size
         self.ckpt_path = ckpt_path
         self.model_name = model_name
@@ -157,41 +154,42 @@ class LSTM(object):
         Trains the lstm model
         """
         # A tensor that is used to get the final data into shape.
-        self.fixing_tensor = tf.get_variable(
-            name='v',
-            shape=[(2*self.hidden_size), self.batch_size],
-            dtype=tf.float32,
-            initializer=tf.random_normal_initializer
-        )
-        # And the bias.
-        self.fixing_bias = tf.get_variable(
-            name='FixingBias',
-            shape=[1, self.batch_size],
-            initializer=tf.constant_initializer(0.)
-        )
-
-        hidden_states = self.get_states()
-
-        # Variables associated with the network.
-        hidden_states_reshaped = tf.reshape(hidden_states, shape=[1, (2 * self.hidden_size)])
-        logits = tf.matmul(
-            hidden_states_reshaped, self.fixing_tensor
-        ) + self.fixing_bias
-
-        predictions = tf.nn.softmax(logits=logits)
-
-        total_loss = tf.nn.softmax_cross_entropy_with_logits(
-            labels=self.output_placeholder, logits=predictions
-        )
-        self.loss = tf.reduce_mean(total_loss)
-        self.optimizer = tf.train.AdamOptimizer(learning_rate=0.01).minimize(self.loss)
         with tf.Session() as sess:
-            # Initialize all the global variables.
+            self.fixing_tensor = tf.get_variable(
+                name='v',
+                shape=[(2*self.hidden_size), self.batch_size],
+                dtype=tf.float32,
+                initializer=tf.random_normal_initializer
+            )
+            # And the bias.
+            self.fixing_bias = tf.get_variable(
+                name='FixingBias',
+                shape=[1, self.batch_size],
+                initializer=tf.constant_initializer(0.)
+            )
+
+            hidden_states = self.get_states()
+
+            # Variables associated with the network.
+            hidden_states_reshaped = tf.reshape(hidden_states, shape=[1, (2 * self.hidden_size)])
+            logits = tf.matmul(
+                hidden_states_reshaped, self.fixing_tensor
+            ) + self.fixing_bias
+
+            predictions = tf.nn.softmax(logits=logits)
+
+            total_loss = tf.nn.softmax_cross_entropy_with_logits(
+                labels=self.output_placeholder, logits=predictions
+            )
+            self.loss = tf.reduce_mean(total_loss)
+            self.optimizer = tf.train.AdamOptimizer(learning_rate=0.01).minimize(self.loss)
+                # Initialize all the global variables.
             sess.run(tf.global_variables_initializer())
             # lets try to understand how the graph will execute
-            train_loss = 0
             for epoch in range(number_epox):
+                train_loss = 0
                 i = 0
+                init_state = np.random.rand(2, 1, self.hidden_size)
                 while i + self.batch_size <= len(data):
                     # Prepare the data.
                     # These are vectors of order [1, batch_size]
@@ -213,11 +211,10 @@ class LSTM(object):
                         feed_dict={
                             self.input_placeholder: input_values,
                             self.output_placeholder: target_values,
-                            self.initial_state_placeholder: np.zeros(
-                                shape=[2, 1, self.hidden_size]
-                            )
+                            self.initial_state_placeholder: init_state
                         }
                     )
+                    train_loss += batch_train_loss
                     i += self.batch_size
-                print('Epoch: %d\tLoss: %f' % (epoch, batch_train_loss))
+                print('Epoch: ', epoch, '\t|Training loss: ', train_loss)
 
