@@ -30,5 +30,5 @@ INDEX_TO_CHARACTER = {
 }
 LINES = DATA.split('\n')
 BATCH_SIZE = 256 if len(DATA) > 256 else len(DATA)
-MODEL = LSTM(20, 30, batch_size=BATCH_SIZE)
-MODEL.train(DATA, CHARACTER_TO_INDEX, number_epox=10)
+MODEL = LSTM(50, batch_size=BATCH_SIZE)
+MODEL.train(DATA, CHARACTER_TO_INDEX, number_epox=100)
