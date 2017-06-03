@@ -1,8 +1,9 @@
 """
 We wish to create a model of the LSTM network
 """
-import tensorflow as tf
 import numpy as np
+import tensorflow as tf
+
 
 class LSTM(object):
     """
@@ -182,7 +183,7 @@ class LSTM(object):
                 labels=self.output_placeholder, logits=predictions
             )
             self.loss = tf.reduce_mean(total_loss)
-            self.optimizer = tf.train.AdamOptimizer(learning_rate=0.01).minimize(self.loss)
+            self.optimizer = tf.train.AdamOptimizer(learning_rate=0.1).minimize(self.loss)
                 # Initialize all the global variables.
             sess.run(tf.global_variables_initializer())
             # lets try to understand how the graph will execute
@@ -216,5 +217,4 @@ class LSTM(object):
                     )
                     train_loss += batch_train_loss
                     i += self.batch_size
-                print('Epoch: ', epoch, '\t|Training loss: ', train_loss)
-
+                print('Epoch: ', epoch, '\t|Training loss: ', train_loss/100)
