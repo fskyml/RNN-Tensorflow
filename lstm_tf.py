@@ -62,7 +62,7 @@ class LSTM(object):
         self.output_placeholder = tf.placeholder(
             dtype=tf.float32,
             shape=[1, self.batch_size],
-            name='Outuput_Placeholder'
+            name='Output_Placeholder'
         )
 
         self.initial_state_placeholder = tf.placeholder(
@@ -179,12 +179,12 @@ class LSTM(object):
 
             predictions = tf.nn.softmax(logits=logits)
 
-            total_loss = tf.nn.softmax_cross_entropy_with_logits(
+            self.total_loss = tf.nn.softmax_cross_entropy_with_logits(
                 labels=self.output_placeholder, logits=predictions
             )
-            self.loss = tf.reduce_mean(total_loss)
-            self.optimizer = tf.train.AdamOptimizer(learning_rate=0.1).minimize(self.loss)
-                # Initialize all the global variables.
+
+            self.optimizer = tf.train.AdamOptimizer(learning_rate=0.1).minimize(self.total_loss)
+            # Initialize all the global variables.
             sess.run(tf.global_variables_initializer())
             # lets try to understand how the graph will execute
             for epoch in range(number_epox):
@@ -208,11 +208,11 @@ class LSTM(object):
                     target_values = np.asarray(target_values).reshape([1, self.batch_size])
 
                     batch_train_loss, _ = sess.run(
-                        [self.loss, self.optimizer],
+                        [self.total_loss, self.optimizer],
                         feed_dict={
                             self.input_placeholder: input_values,
                             self.output_placeholder: target_values,
-                            self.initial_state_placeholder: init_state
+                            self.initial_state_placeholder: np.zeros(shape=[2, 1, self.hidden_size])
                         }
                     )
                     train_loss += batch_train_loss
