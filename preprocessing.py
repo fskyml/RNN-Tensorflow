@@ -8,9 +8,9 @@ from lstm_tf import LSTM
 PAUL_GRAHAM_DATA = 'data/paulg/paulg.txt'
 REDDIT_COMMENTS_DATA = 'data/RedditComments/reddit-comments-2015-08.txt'
 TESTING_DATA = 'data/small_data_for_testing.txt'
-DATA = open(
-    PAUL_GRAHAM_DATA, 'r', encoding='utf8'
-).read()
+DATA = None
+with open(TESTING_DATA, 'r', encoding='utf8') as file:
+    DATA = file.read()
 
 # Extract individuals characters from the string.
 CHARACTERS = sorted(
@@ -28,7 +28,6 @@ CHARACTER_TO_INDEX = {
 INDEX_TO_CHARACTER = {
     i: ch for i, ch in enumerate(CHARACTERS)
 }
-LINES = DATA.split('\n')
 BATCH_SIZE = 256 if len(DATA) > 256 else len(DATA)
 MODEL = LSTM(50, batch_size=BATCH_SIZE)
 MODEL.train(DATA, CHARACTER_TO_INDEX, number_epox=100)
