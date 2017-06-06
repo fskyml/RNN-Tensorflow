@@ -1,5 +1,3 @@
-import os
-
 import numpy as np
 import tensorflow as tf
 
@@ -83,7 +81,6 @@ with tf.variable_scope('ComputationGraph') as scope:
             [vocab_size, hidden_size],
             initializer=random_normal_initialize()
         )
-        tf.summary.histogram('WXH', W_xh)
 
         # 100x100 matrix.
         W_hh = tf.get_variable(
@@ -91,7 +88,6 @@ with tf.variable_scope('ComputationGraph') as scope:
             [hidden_size, hidden_size],
             initializer=random_normal_initialize()
         )
-        tf.summary.histogram('WHH', W_hh)
 
         # 100x81 matrix.
         W_yh = tf.get_variable(
@@ -99,7 +95,6 @@ with tf.variable_scope('ComputationGraph') as scope:
             [hidden_size, vocab_size],
             initializer=random_normal_initialize()
         )
-        tf.summary.histogram('WYH', W_yh)
 
         # Update hidden state
         hidden_state_at_t = tf.tanh(
@@ -112,15 +107,11 @@ with tf.variable_scope('ComputationGraph') as scope:
             )
         )
 
-        tf.summary.histogram('HiddenState', hidden_state_at_t)
-
         # Update the temporary output state.
         output_state_at_t = tf.matmul(
             hidden_state_at_t,
             W_yh
         )
-
-        tf.summary.histogram('OutputState', output_state_at_t)
 
         # add this to the list so that we can backpropagate later.
         output_state_list.append(output_state_at_t)
@@ -133,19 +124,12 @@ predicted_output = tf.concat(output_state_list, axis=0)
 cross_entropy = tf.nn.softmax_cross_entropy_with_logits(labels=output_placeholder, logits=predicted_output)
 loss = tf.reduce_mean(cross_entropy)
 
-tf.summary.scalar('CrossEntropy', cross_entropy)
-
 optimizer = tf.train.AdamOptimizer(learning_rate).minimize(loss)
-
-summary = tf.summary.merge_all()
 
 with tf.Session() as sess:
     initiator = tf.global_variables_initializer()
     # Initialize all variables.
     sess.run(initiator)
-    file_writer = tf.summary.FileWriter('/home/arko/Documents/Python/Deep '
-                                        'Learning/RecurrentNeuralNetwork/Tensorboard/Vanilla RNN/hparam')
-    file_writer.add_graph(sess.graph)
     p = 0
     previous_value_hidden = np.zeros([1, hidden_size])
 
@@ -170,15 +154,10 @@ with tf.Session() as sess:
             }
         )
 
-        if p % 100 == 0:
-            saver.save(sess, os.path.join('/home/arko/Documents/Python/Deep '
-                                          'Learning/RecurrentNeuralNetwork/Tensorboard/Vanilla RNN/model.ckpt'), p)
-
         p += step_to_unroll
     correct = tf.equal(tf.argmax(predicted_output, 1), tf.argmax(output_placeholder, 1))
 
     accuracy = tf.reduce_mean(tf.cast(correct, 'float'))
-    tf.summary.scalar('Accuracy', accuracy)
     test_input = [test_character_index[ch] for ch in test_data[:1400]]
     test_output = [test_character_index[ch] for ch in test_data[1:1401]]
 
