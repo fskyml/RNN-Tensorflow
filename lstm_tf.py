@@ -2,6 +2,7 @@
 We wish to create a model of the LSTM network
 """
 import numpy as np
+import random
 import tensorflow as tf
 
 
@@ -142,7 +143,7 @@ class LSTM(object):
         return tf.stack([new_memory_cell, new_state])
 
     def get_states(self):
-        """Returns the states of the hidden list"""
+        """Returns the list of the hidden states"""
         hidden_states = tf.scan(
             self.step,
             self.input_placeholder,
@@ -158,7 +159,7 @@ class LSTM(object):
         with tf.Session() as sess:
             self.fixing_tensor = tf.get_variable(
                 name='v',
-                shape=[(2*self.hidden_size), self.batch_size],
+                shape=[(2 * self.hidden_size), self.batch_size],
                 dtype=tf.float32,
                 initializer=tf.random_normal_initializer
             )
@@ -170,9 +171,10 @@ class LSTM(object):
             )
 
             hidden_states = self.get_states()
+            self.last_state = hidden_states[-1]
 
             # Variables associated with the network.
-            hidden_states_reshaped = tf.reshape(hidden_states, shape=[1, (2 * self.hidden_size)])
+            hidden_states_reshaped = tf.reshape(self.last_state, shape=[1, (2 * self.hidden_size)])
             logits = tf.matmul(
                 hidden_states_reshaped, self.fixing_tensor
             ) + self.fixing_bias
@@ -183,14 +185,14 @@ class LSTM(object):
                 labels=self.output_placeholder, logits=predictions
             )
 
-            self.optimizer = tf.train.AdamOptimizer(learning_rate=0.1).minimize(self.total_loss)
+            self.optimizer = tf.train.AdamOptimizer(learning_rate=0.001).minimize(self.total_loss)
             # Initialize all the global variables.
             sess.run(tf.global_variables_initializer())
             # lets try to understand how the graph will execute
+            init_state = np.zeros(shape=[2, 1, self.hidden_size])
             for epoch in range(number_epox):
                 train_loss = 0
                 i = 0
-                init_state = np.random.rand(2, 1, self.hidden_size)
                 while i + self.batch_size <= len(data):
                     # Prepare the data.
                     # These are vectors of order [1, batch_size]
@@ -207,12 +209,12 @@ class LSTM(object):
                     input_values = np.asarray(input_values).reshape([1, self.batch_size])
                     target_values = np.asarray(target_values).reshape([1, self.batch_size])
 
-                    batch_train_loss, _ = sess.run(
-                        [self.total_loss, self.optimizer],
+                    batch_train_loss, _, init_state = sess.run(
+                        [self.total_loss, self.optimizer, self.last_state],
                         feed_dict={
                             self.input_placeholder: input_values,
                             self.output_placeholder: target_values,
-                            self.initial_state_placeholder: np.zeros(shape=[2, 1, self.hidden_size])
+                            self.initial_state_placeholder: init_state
                         }
                     )
                     train_loss += batch_train_loss
