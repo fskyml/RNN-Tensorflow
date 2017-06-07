@@ -182,14 +182,13 @@ class LSTM(object):
             predictions = tf.nn.softmax(logits=logits)
 
             self.total_loss = tf.nn.softmax_cross_entropy_with_logits(
-                labels=self.output_placeholder, logits=predictions
+                labels=self.output_placeholder, logits=logits
             )
 
-            self.optimizer = tf.train.AdamOptimizer(learning_rate=0.001).minimize(self.total_loss)
+            self.optimizer = tf.train.AdagradOptimizer(learning_rate=0.01).minimize(self.total_loss)
             # Initialize all the global variables.
             sess.run(tf.global_variables_initializer())
             # lets try to understand how the graph will execute
-            init_state = np.zeros(shape=[2, 1, self.hidden_size])
             for epoch in range(number_epox):
                 train_loss = 0
                 i = 0
@@ -209,12 +208,12 @@ class LSTM(object):
                     input_values = np.asarray(input_values).reshape([1, self.batch_size])
                     target_values = np.asarray(target_values).reshape([1, self.batch_size])
 
-                    batch_train_loss, _, init_state = sess.run(
-                        [self.total_loss, self.optimizer, self.last_state],
+                    batch_train_loss, _ = sess.run(
+                        [self.total_loss, self.optimizer],
                         feed_dict={
                             self.input_placeholder: input_values,
                             self.output_placeholder: target_values,
-                            self.initial_state_placeholder: init_state
+                            self.initial_state_placeholder: np.zeros(shape=[2, 1, self.hidden_size])
                         }
                     )
                     train_loss += batch_train_loss
