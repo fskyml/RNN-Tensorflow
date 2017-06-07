@@ -28,6 +28,6 @@ CHARACTER_TO_INDEX = {
 INDEX_TO_CHARACTER = {
     i: ch for i, ch in enumerate(CHARACTERS)
 }
-BATCH_SIZE = 256 if len(DATA) > 256 else len(DATA)
+BATCH_SIZE = 100 if len(DATA) > 100 else len(DATA)
 MODEL = LSTM(50, batch_size=BATCH_SIZE)
 MODEL.train(DATA, CHARACTER_TO_INDEX, number_epox=100)
