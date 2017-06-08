@@ -10,28 +10,6 @@ class LSTM(object):
     """
     Defines the model of the lstm network
     """
-    # The variables that we define later in the class.
-    # Placeholders.
-    input_placeholder = None
-    output_placeholder = None
-    initial_state_placeholder = None
-    loss = None
-    optimizer = None
-
-    # Weight matriced
-    hidden_weight = None
-    input_weight = None
-
-    # Hyperparameters
-    hidden_size = None
-    batch_size = 256
-
-    # Model parameters
-    ckpt_path = None
-    model_name = None
-
-    fixing_tensor = None
-    fixing_bias = None
 
     def __init__(
             self,
